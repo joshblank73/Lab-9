@@ -1,0 +1,144 @@
+---
+title: "Lab 9"
+author: "Joshua Blank"
+format: 
+  html: 
+    self-contained: true
+    code-tools: true
+editor: visual
+execute: 
+  echo: true
+  include: true
+  message: false
+  warning: false
+embed-resources: true
+---
+
+## Packages
+
+```{r}
+#| label: dependencies
+
+library(ggplot2)
+library(tibble)
+library(dplyr)
+library(purrr)
+library(ggthemes)
+library(ambient)
+library(cowplot)
+library(magick)
+library(ggimage)
+```
+
+## Piece 1: "Messi"
+
+```{r}
+#| label: polar-art-function
+
+polar_art <- function(seed, n, palette, data = NULL, image = NULL) {
+  
+  # set the state of the random number generator
+  set.seed(seed)
+  
+  # data frame containing random values for 
+  # aesthetics we might want to use in the art
+  if (is.null(data)) {
+    dat <- tibble(
+      x0 = runif(n),
+      y0 = runif(n),
+      x1 = x0 + runif(n, min = -.2673, max = .2673),
+      y1 = y0 + runif(n, min = -.2673, max = .2673),
+      shade = runif(n), 
+      size = runif(n)
+    )
+  }
+  
+  else {
+    dat <- tibble(
+      x0 = as.vector(data[,1]),
+      y0 = as.vector(data[,2]),
+      x1 = x0 + as.vector(data[,3]),
+      y1 = y0 + as.vector(data[,4]),
+      shade = runif(n), 
+      size = runif(n)
+    )
+  }
+  
+  # plot segments in various colours, using 
+  # polar coordinates and a gradient palette
+  my_plot <- dat |> 
+    ggplot(aes(
+      x = x0,
+      y = y0,
+      xend = x1,
+      yend = y1,
+      colour = shade,
+      size = size
+    )) +
+    geom_segment(show.legend = FALSE) +
+    coord_polar() +
+    scale_y_continuous(expand = c(0, 0)) +
+    scale_x_continuous(expand = c(0, 0)) + 
+    scale_colour_gradientn(colours = palette) + 
+    scale_size(range = c(0, 10)) + 
+    theme_void()
+  
+  if (is.null(image)) {
+    my_plot
+  }
+  
+  else {
+    ggdraw() +
+    draw_image(image, x = -0.03, y = 0.1, scale = 0.17) +
+    draw_plot(my_plot)
+  }
+}
+```
+
+```{r}
+#| label: polar-art
+
+polar_art(73, nrow(iris), c("gold", "maroon", "darkblue"), iris,
+          "https://www.freeiconspng.com/thumbs/soccer-ball-png/soccer-ball-png-33.png")
+```
+
+## Piece 2: "Pique"
+
+```{r}
+blank_canvas <- long_grid(
+  x = seq(from = 0, to = 1, length.out = 2000),
+  y = seq(from = 0, to = 1, length.out = 2000)
+) 
+
+plot_painted_canvas <- function(canvas, palette = NULL) {
+  if(is.null(palette)) {
+    palette <- c("honeydew1","honeydew2","honeydew3","honeydew4")
+  }
+  canvas |> 
+    ggplot(aes(x, y, fill = paint)) + 
+    geom_raster(show.legend = FALSE) +
+    theme_void() +
+    coord_equal() +
+    scale_x_continuous(expand = c(0, 0)) +
+    scale_y_continuous(expand = c(0, 0)) +
+    scale_fill_gradientn(colours = palette)
+}
+
+fractal_art <- function(fractal, generator, palette = NULL, ...) {
+  blank_canvas |>
+    mutate(
+      paint = fracture(
+        noise = generator,
+        fractal = fractal,
+        x = x, 
+        y = y, 
+        ...
+      )
+    ) |>
+    plot_painted_canvas(palette = palette)
+}
+```
+
+```{r}
+fractal_art(billow, gen_worley, seed = 26, octaves = 13)
+```
