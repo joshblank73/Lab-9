@@ -59,8 +59,8 @@ polar_art <- function(seed, n, palette, data = NULL, image = NULL) {
       y0 = as.vector(data[,2]),
       x1 = x0 + as.vector(data[,3]),
       y1 = y0 + as.vector(data[,4]),
-      shade = runif(n), 
-      size = runif(n)
+      shade = x0*y0, 
+      size = x1*y1
     )
   }
   
@@ -75,7 +75,7 @@ polar_art <- function(seed, n, palette, data = NULL, image = NULL) {
       colour = shade,
       size = size
     )) +
-    geom_segment(show.legend = FALSE) +
+    geom_segment(show.legend = FALSE, lineend = "round") +
     coord_polar() +
     scale_y_continuous(expand = c(0, 0)) +
     scale_x_continuous(expand = c(0, 0)) + 
@@ -98,13 +98,17 @@ polar_art <- function(seed, n, palette, data = NULL, image = NULL) {
 ```{r}
 #| label: polar-art
 
-polar_art(73, nrow(iris), c("gold", "maroon", "darkblue"), iris,
+polar_art(73, nrow(iris), c("navyblue", "maroon", "gold"), iris,
           "https://www.freeiconspng.com/thumbs/soccer-ball-png/soccer-ball-png-33.png")
 ```
 
-## Piece 2: "Pique"
+"Messi" depicts a soccer ball spiraling down, leaving a messy color trail in its path containing the colors of La Liga's FC Barcelona (maroon, navy blue, gold), the club Lionel Messi spent the majority of his career playing for. The trail is made using the "iris" data set to determine the x, y, xend, yend, size, and shape values to create the line segments. The polar art function then uses coord_polar to transition the segments from a cartesian to a polar plot, creating the spiraling nature of the image. The ggdraw() function from the ggimage package is then used to add the image of the soccer ball.
+
+## Piece 2: "Peakasso"
 
 ```{r}
+#| label: fractal-art-function
+
 blank_canvas <- long_grid(
   x = seq(from = 0, to = 1, length.out = 2000),
   y = seq(from = 0, to = 1, length.out = 2000)
@@ -140,5 +144,9 @@ fractal_art <- function(fractal, generator, palette = NULL, ...) {
 ```
 
 ```{r}
+#| label: fractal-art
+
 fractal_art(billow, gen_worley, seed = 26, octaves = 13)
 ```
+
+"Peakasso" depicts a mountain range from across a body of water. It is done in a style that incorporates cubism, surrealism, and other styles popularized by Spanish artist Pablo Picasso, hence its name. The fractal is made using the fractal_art() function. The shapes are made using the billow fractal which creates kaleidoscopic-eqsue patterns. The gen_worley generator then generates Perlin/random noise so that the shapes produces are random in nature. Setting the octaves to 13 then increases the number of replicates of the fractal. Overall, these elements, in addition to the random seed and honeydew colors, produce this eerily recognizable image.
